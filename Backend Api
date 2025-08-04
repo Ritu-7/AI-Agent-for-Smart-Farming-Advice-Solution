@@ -1,0 +1,26 @@
+from flask import Flask, request
+from ibm_watson import DiscoveryV2
+from ibm_watsonx_ai import WatsonxModel
+
+app = Flask(__name__)
+
+# Initialize IBM Services
+discovery = DiscoveryV2(version="2023-10-30", api_key=os.getenv("DISCOVERY_API_KEY"))
+model = WatsonxModel(model_id="granite-13b-chat", api_key=os.getenv("WATSONX_API_KEY"))
+
+@app.route("/ask", methods=["POST"])
+def ask():
+    query = request.json["query"]
+    # Step 1: Retrieve from Watson Discovery
+    docs = discovery.query(
+        project_id=os.getenv("DISCOVERY_PROJECT_ID"),
+        natural_language_query=query
+    ).get_result()
+    # Step 2: Generate with Watsonx
+    response = model.generate(
+        f"Answer in simple terms for a farmer: {docs['results'][0]['text']}"
+    )
+    return {"answer": response}
+
+# Deploy with: ibmcloud ce app create --name farming-api --build-source . --port 5000
+
