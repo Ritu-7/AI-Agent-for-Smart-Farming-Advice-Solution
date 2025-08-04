@@ -1,0 +1,13 @@
+from ibm_watson import DiscoveryV2
+
+discovery = DiscoveryV2(version="2023-10-30", api_key=os.getenv("DISCOVERY_API_KEY"))
+
+# Add training query for pest control
+discovery.create_training_query(
+    project_id=os.getenv("DISCOVERY_PROJECT_ID"),
+    natural_language_query="How to treat rice blast?",
+    examples=[{
+        "document_id": "rice_diseases.pdf",
+        "relevance": 1
+    }]
+).get_result()
